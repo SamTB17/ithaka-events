@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ithaka Alexandria - Events</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FullCalendar.js for the calendar view and Google Calendar connector -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    
+    <!-- Google Fonts - Using 'Inter' as a clean, modern alternative to Helvetica Condensed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Applying custom brand styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light grey background */
+        }
+
+        /* Custom colors from your brand guide */
+        :root {
+            --ithaka-blue: #1F2B5F;
+            --ithaka-gold: #DCB033;
+        }
+
+        /* Styling for FullCalendar to match the brand */
+        .fc {
+            border: none;
+        }
+        .fc .fc-toolbar-title {
+            color: var(--ithaka-blue);
+            font-weight: 700;
+        }
+        .fc .fc-button-primary {
+            background-color: var(--ithaka-blue) !important;
+            border-color: var(--ithaka-blue) !important;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .fc .fc-button-primary:hover {
+            background-color: #1a2552 !important;
+        }
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: rgba(220, 176, 51, 0.15);
+        }
+        .fc .fc-event {
+            background-color: var(--ithaka-blue);
+            border-color: var(--ithaka-blue);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .fc-event:hover {
+            opacity: 0.9;
+        }
+        .fc-h-event {
+            border: 1px solid var(--ithaka-blue);
+        }
+        .fc-daygrid-event {
+            white-space: normal; /* Allow event text to wrap */
+        }
+        .fc-event-main-frame {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .fc-event-title {
+            font-weight: 500;
+        }
+        .fc-event-time, .fc-event-location {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        
+        /* Custom modal for event details */
+        #event-modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #event-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header with Ithaka Branding -->
+    <header class="bg-white shadow-md p-4 flex justify-center items-center" style="background-color: var(--ithaka-blue);">
+        <div class="flex items-center space-x-4">
+            <!-- SVG version of the logo for crisp rendering -->
+            <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 5C52.9282 5 55.7869 6.15892 57.9541 8.32612L91.6739 41.6739C96.3211 46.3211 96.3211 53.6789 91.6739 58.3261C89.444 60.556 86.5857 61.75 83.3478 61.75H65.8333C62.1111 61.75 58.75 59.8333 56.6667 56.6667C54.5833 53.5 52.5 53.5 50 53.5C47.5 53.5 45.4167 53.5 43.3333 56.6667C41.25 59.8333 37.8889 61.75 34.1667 61.75H16.6522C13.4143 61.75 10.556 60.556 8.32612 58.3261C3.67893 53.6789 3.67893 46.3211 8.32612 41.6739L42.0459 8.32612C44.2131 6.15892 47.0718 5 50 5Z" fill="#DCB033"/>
+                <path d="M65 20C65 24.1421 61.6421 27.5 57.5 27.5H42.5C38.3579 27.5 35 24.1421 35 20C35 15.8579 38.3579 12.5 42.5 12.5H57.5C61.6421 12.5 65 15.8579 65 20Z" fill="#1F2B5F"/>
+                <path d="M50 95C54.1421 95 57.5 91.6421 57.5 87.5V72.5C57.5 68.3579 54.1421 65 50 65C45.8579 65 42.5 68.3579 42.5 72.5V87.5C42.5 91.6421 45.8579 95 50 95Z" fill="#DCB033"/>
+            </svg>
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider" style="color: white;">ITHAKA</h1>
+                <p class="text-sm uppercase tracking-widest" style="color: var(--ithaka-gold);">Alexandria Events</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area for the Calendar -->
+    <main class="p-4 md:p-8">
+        <div id='calendar-container' class="max-w-7xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+            <div id='calendar'></div>
+        </div>
+    </main>
+
+    <!-- Modal for displaying event details -->
+    <div id="event-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-bold" style="color: var(--ithaka-blue);">Event Details</h3>
+                <button id="modal-close" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Time</p>
+                    <p id="modal-time" class="text-lg"></p>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Location</p>
+                    <p id="modal-location" class="text-lg"></p>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Description</p>
+                    <p id="modal-description" class="text-base text-gray-700"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                
+                // --- THIS IS THE UPDATED PART ---
+                // Replace the placeholder values below with your actual credentials
+                // from the guide.
+                events: {
+                    googleCalendarId: '31f04920418e711f762c17c4b95032516870c135f98278715758df13392bf6a9@group.calendar.google.com',
+                    googleCalendarApiKey: 'AIzaSyDU75ABQhnDVRUO3sH7LV5XB7DboynEY2k'
+                },
+                // ---------------------------------
+
+                eventDidMount: function(info) {
+                    // This function correctly pulls the 'location' from Google Calendar events
+                    // and adds it to the calendar view.
+                    const location = info.event.extendedProps.location;
+                    if (location) {
+                        const locationEl = document.createElement('div');
+                        locationEl.classList.add('fc-event-location');
+                        locationEl.innerHTML = `📍 ${location}`;
+                        info.el.querySelector('.fc-event-main-frame').appendChild(locationEl);
+                    }
+                },
+                eventClick: function(info) {
+                    // When an event is clicked, show the modal with its details
+                    info.jsEvent.preventDefault(); // don't let the browser navigate
+                    
+                    const modal = document.getElementById('event-modal');
+                    const modalTitle = document.getElementById('modal-title');
+                    const modalTime = document.getElementById('modal-time');
+                    const modalLocation = document.getElementById('modal-location');
+                    const modalDescription = document.getElementById('modal-description');
+
+                    modalTitle.textContent = info.event.title;
+                    
+                    let timeString = '';
+                    const start = info.event.start;
+                    const end = info.event.end;
+
+                    if (info.event.allDay) {
+                        timeString = `All day on ${start.toLocaleDateString()}`;
+                    } else {
+                        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        timeString = `${start.toLocaleDateString(undefined, options)}<br>${start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${end ? end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}`;
+                    }
+
+                    modalTime.innerHTML = timeString;
+                    // For Google Calendar events, location and description are in extendedProps
+                    modalLocation.textContent = info.event.extendedProps.location || 'Not specified';
+                    modalDescription.textContent = info.event.extendedProps.description || 'No description available.';
+
+                    modal.classList.remove('hidden');
+                }
+            });
+
+            calendar.render();
+
+            // Modal close functionality
+            const modalCloseBtn = document.getElementById('modal-close');
+            const eventModal = document.getElementById('event-modal');
+            
+            function closeModal() {
+                eventModal.classList.add('hidden');
+            }
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            eventModal.addEventListener('click', function(e) {
+                if (e.target === eventModal) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
