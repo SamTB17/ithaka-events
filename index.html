@@ -8,8 +8,12 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FullCalendar.js for the calendar view -->
+    <!-- FullCalendar.js Core -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    
+    <!-- *** THE MISSING PIECE *** -->
+    <!-- FullCalendar.js Google Calendar Connector Plugin -->
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.11/index.global.min.js'></script>
     
     <!-- Google Fonts - Using 'Inter' as a clean, modern alternative to Helvetica Condensed -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -150,18 +154,12 @@
                     right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
                 
-                // --- CORRECTED CONFIGURATION ---
-                // This 'events' object now correctly uses the Google Calendar API.
-                // Replace the placeholder values with your actual credentials.
                 events: {
                     googleCalendarId: '31f04920418e711f762c17c4b95032516870c135f98278715758df13392bf6a9@group.calendar.google.com',
                     googleCalendarApiKey: 'AIzaSyDU75ABQhnDVRUO3sH7LV5XB7DboynEY2k'
                 },
-                // ---------------------------------
 
                 eventDidMount: function(info) {
-                    // This part correctly reads the 'location' from the Google Calendar event
-                    // and adds it to the display.
                     const location = info.event.extendedProps.location;
                     if (location) {
                         const locationEl = document.createElement('div');
@@ -171,8 +169,7 @@
                     }
                 },
                 eventClick: function(info) {
-                    // When an event is clicked, show the modal with its details
-                    info.jsEvent.preventDefault(); // don't let the browser navigate
+                    info.jsEvent.preventDefault(); 
                     
                     const modal = document.getElementById('event-modal');
                     const modalTitle = document.getElementById('modal-title');
@@ -194,7 +191,6 @@
                     }
 
                     modalTime.innerHTML = timeString;
-                    // For Google Calendar events, the location and description are in extendedProps
                     modalLocation.textContent = info.event.extendedProps.location || 'Not specified';
                     modalDescription.textContent = info.event.extendedProps.description || 'No description available.';
 
